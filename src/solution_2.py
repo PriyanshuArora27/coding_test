@@ -13,16 +13,20 @@ def pairs(arr: list, k: int):
     int_set = set(arr)
     count = 0
     for x in arr:
-        if x+k in int_set:
-            print(f'{x} {x+k}')
+        if x + k in int_set:
+            print(f"{x} {x+k}")
             count += 1
-        if x-k in int_set:
+        if x - k in int_set:
             count += 1
     return int(count / 2)
 
 
 if __name__ == "__main__":
-    my_array = list(map(int, input('Enter the list on which you want to obtain the pairs: ').split()))
-    diff = int(input('Enter the differnce that you want in the digits of pairs: '))
+    my_array = list(
+        map(
+            int, input("Enter the list on which you want to obtain the pairs: ").split()
+        )
+    )
+    diff = int(input("Enter the differnce that you want in the digits of pairs: "))
     pair_count = pairs(my_array, diff)
-    print(f'The number of pairs that have the diffence of {diff} are: {pair_count}')
+    print(f"The number of pairs that have the diffence of {diff} are: {pair_count}")

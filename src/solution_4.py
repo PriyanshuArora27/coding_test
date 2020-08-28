@@ -13,10 +13,13 @@ def initialize_parameters(n_in, n_out):
 
     params = dict()  # initialize empty dictionary of neural net parameters W and b
 
-    params['W'] = np.random.randn(n_out, n_in) *0.01  # set weights 'W' to small random gaussian
-    params['b'] = np.zeros((n_out, 1))    # set bias 'b' to zeros
+    params["W"] = (
+        np.random.randn(n_out, n_in) * 0.01
+    )  # set weights 'W' to small random gaussian
+    params["b"] = np.zeros((n_out, 1))  # set bias 'b' to zeros
 
     return params
+
 
 class LinearLayer:
     """
@@ -43,8 +46,12 @@ class LinearLayer:
 
         self.m = input_shape[1]  # number of examples in training data
         # `params` store weights and bias in a python dictionary
-        self.params = initialize_parameters(input_shape[0], n_out)  # initialize weights and bias
-        self.Z = np.zeros((self.params['W'].shape[0], input_shape[1]))  # create space for resultant Z output
+        self.params = initialize_parameters(
+            input_shape[0], n_out
+        )  # initialize weights and bias
+        self.Z = np.zeros(
+            (self.params["W"].shape[0], input_shape[1])
+        )  # create space for resultant Z output
 
     def forward(self, A_prev):
         """
@@ -54,7 +61,9 @@ class LinearLayer:
         """
 
         self.A_prev = A_prev  # store the Activations/Training Data coming in
-        self.Z = np.dot(self.params['W'], self.A_prev) + self.params['b']  # compute the linear function
+        self.Z = (
+            np.dot(self.params["W"], self.A_prev) + self.params["b"]
+        )  # compute the linear function
 
     def backward(self, upstream_grad):
         """
@@ -70,7 +79,7 @@ class LinearLayer:
         self.db = np.sum(upstream_grad, axis=1, keepdims=True)
 
         # derivative of Cost w.r.t A_prev
-        self.dA_prev = np.dot(self.params['W'].T, upstream_grad)
+        self.dA_prev = np.dot(self.params["W"].T, upstream_grad)
 
     def update_params(self, learning_rate=0.1):
         """
@@ -79,8 +88,9 @@ class LinearLayer:
             learning_rate: learning rate hyper-param for gradient descent, default 0.1
         """
 
-        self.params['W'] = self.params['W'] - learning_rate * self.dW  # update weights
-        self.params['b'] = self.params['b'] - learning_rate * self.db  # update bias(es)
+        self.params["W"] = self.params["W"] - learning_rate * self.dW  # update weights
+        self.params["b"] = self.params["b"] - learning_rate * self.db  # update bias(es)
+
 
 class SigmoidLayer:
     """
@@ -117,7 +127,8 @@ class SigmoidLayer:
             upstream_grad: gradient coming into this layer from the layer above
         """
         # couple upstream gradient with local gradient, the result will be sent back to the Linear layer
-        self.dZ = upstream_grad * self.A*(1-self.A)
+        self.dZ = upstream_grad * self.A * (1 - self.A)
+
 
 def compute_cost(Y, Y_hat):
     """
@@ -142,19 +153,9 @@ def compute_cost(Y, Y_hat):
 
 if __name__ == "__main__":
 
-    X = np.array([
-        [0, 0],
-        [0, 1],
-        [1, 0],
-        [1, 1]
-    ])
+    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
 
-    Y = np.array([
-        [0],
-        [1],
-        [1],
-        [0]
-    ])
+    Y = np.array([[0], [1], [1], [0]])
 
     X_train = X.T
     Y_train = Y.T
@@ -162,59 +163,59 @@ if __name__ == "__main__":
     learning_rate = 1
     number_of_epochs = 5000
 
-    np.random.seed(48) # set seed value so that the results are reproduceable
+    np.random.seed(48)  # set seed value so that the results are reproduceable
     # (weights will now be initailzaed to the same pseudo-random numbers, each time)
 
+    # Our network architecture has the shape:
+    # (input)--> [Linear->Sigmoid] -> [Linear->Sigmoid]->[Linear->Sigmoid] -->(output)
 
-    # Our network architecture has the shape: 
-    # (input)--> [Linear->Sigmoid] -> [Linear->Sigmoid]->[Linear->Sigmoid] -->(output)  
-
-    #------ LAYER-1 ----- define hidden layer that takes in training data 
+    # ------ LAYER-1 ----- define hidden layer that takes in training data
     Z1 = LinearLayer(input_shape=X_train.shape, n_out=5)
     A1 = SigmoidLayer(Z1.Z.shape)
 
-    #------ LAYER-2 ----- define output layer that take is values from hidden layer
-    Z2= LinearLayer(input_shape=A1.A.shape, n_out=3)
-    A2= SigmoidLayer(Z2.Z.shape)
+    # ------ LAYER-2 ----- define output layer that take is values from hidden layer
+    Z2 = LinearLayer(input_shape=A1.A.shape, n_out=3)
+    A2 = SigmoidLayer(Z2.Z.shape)
 
+    # ------ LAYER-3 ----- define output layer that take is values from 2nd hidden layer
+    Z3 = LinearLayer(input_shape=A2.A.shape, n_out=1)
+    A3 = SigmoidLayer(Z3.Z.shape)
 
-    #------ LAYER-3 ----- define output layer that take is values from 2nd hidden layer
-    Z3= LinearLayer(input_shape=A2.A.shape, n_out=1)
-    A3= SigmoidLayer(Z3.Z.shape)
-
-    costs = [] # initially empty list, this will store all the costs after a certian number of epochs
+    costs = (
+        []
+    )  # initially empty list, this will store all the costs after a certian number of epochs
 
     # Start training
     for epoch in range(number_of_epochs):
-    
+
         # ------------------------- forward-prop -------------------------
         Z1.forward(X_train)
         A1.forward(Z1.Z)
-        
+
         Z2.forward(A1.A)
         A2.forward(Z2.Z)
-        
+
         Z3.forward(A2.A)
         A3.forward(Z3.Z)
-        
+
         # ---------------------- Compute Cost ----------------------------
         cost, dA3 = compute_cost(Y=Y_train, Y_hat=A3.A)
-        
+
         # print and store Costs every 100 iterations.
         if (epoch % 100) == 0:
             print("Cost at epoch#{}: {}".format(epoch, cost))
             costs.append(cost)
-        
+
         # ------------------------- back-prop ----------------------------
         A3.backward(dA3)
         Z3.backward(A3.dZ)
-        
+
         A2.backward(Z3.dA_prev)
         Z2.backward(A2.dZ)
-        
+
         A1.backward(Z2.dA_prev)
         Z1.backward(A1.dZ)
-        
+
         # ----------------------- Update weights and bias ----------------
         Z3.update_params(learning_rate=learning_rate)
         Z2.update_params(learning_rate=learning_rate)
